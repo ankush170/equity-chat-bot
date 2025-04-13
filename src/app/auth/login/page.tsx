@@ -65,7 +65,7 @@ export default function LoginPage() {
           Sign in with Google
         </button>
         <p className="mt-4 text-center text-sm">
-          Don't have an account? <a href="/auth/signup" className="text-purple-600 hover:underline">Sign up</a>
+          Don&apos;t have an account? <a href="/auth/signup" className="text-purple-600 hover:underline">Sign up</a>
         </p>
       </motion.div>
     </div>
