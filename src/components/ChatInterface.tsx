@@ -1,15 +1,34 @@
 "use client";
 
-import { Thread } from "../app/dashboard/page";
+import { useEffect, useRef } from 'react';
+import { Thread, StreamMessage } from "../types/thread";
 import { motion } from "framer-motion";
 import { Sparkles, LineChart, Database, Globe, FileText } from 'lucide-react';
-
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useAuth } from '../contexts/AuthContext';
 interface ChatInterfaceProps {
   thread: Thread | null;
   onStartChat: () => void;
+  streamingMessage?: StreamMessage;
 }
 
-export default function ChatInterface({ thread, onStartChat }: ChatInterfaceProps) {
+interface CodeProps extends React.HTMLProps<HTMLElement> {
+  inline?: boolean;
+}
+
+export default function ChatInterface({ thread, onStartChat, streamingMessage }: ChatInterfaceProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [thread?.messages, streamingMessage]);
+
   if (!thread) {
     return (
       <motion.div 
@@ -101,65 +120,95 @@ export default function ChatInterface({ thread, onStartChat }: ChatInterfaceProp
     );
   }
 
+  const allMessages = [
+    ...(thread?.messages || []),
+    ...(streamingMessage ? [streamingMessage] : [])
+  ];
+
   return (
     <div className="space-y-8 p-6">
-      {thread.messages.map((message) => (
+      {allMessages.map((message) => (
         <motion.div 
           key={message.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+          className="space-y-8"
         >
-          <div className={`flex items-start gap-4 max-w-3xl ${message.type === "user" ? "flex-row-reverse" : "flex-row"}`}>
-            <motion.div 
-              whileHover={{ scale: 1.1, rotate: message.type === "user" ? -5 : 5 }}
-              className={`w-8 h-8 rounded-full shadow-md overflow-hidden flex-shrink-0 ${message.type === "user" ? "bg-[#D15F40]/10" : "bg-[#499A97]/10"}`}
-            >
-              <img 
-                src={message.type === "bot" 
-                  ? `https://api.dicebear.com/6.x/bottts/svg?seed=assistant` 
-                  : `https://api.dicebear.com/6.x/micah/svg?seed=user`}
-                alt={message.type === "bot" ? "Assistant" : "User"}
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-            <div className="flex flex-col">
+          {/* User Query */}
+          <motion.div className="flex justify-end">
+            <div className="flex items-start gap-4 max-w-3xl flex-row-reverse">
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                className="w-8 h-8 rounded-full shadow-md overflow-hidden flex-shrink-0 bg-[#D15F40]/10"
+              >
+                <img 
+                  src={`https://api.dicebear.com/6.x/micah/svg?seed=${user?.email || 'guest'}`}
+                  alt="User"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
               <motion.div 
                 whileHover={{ scale: 1.01 }}
-                className={`px-6 py-4 rounded-2xl shadow-md ${
-                  message.type === "user" 
-                    ? "bg-[#D15F40] text-white" 
-                    : "bg-[#F0E5D8] text-[#2D2A28] border border-[#DCD2C7]"
-                }`}
+                className="bg-[#D15F40] text-white px-6 py-4 rounded-2xl shadow-md"
               >
-                <p className="text-base font-medium">{message.text.split('[Citation:')[0].trim()}</p>
-                <span className={`text-xs mt-2 block ${
-                  message.type === "user" 
-                    ? "text-blue-100" 
-                    : "text-gray-500"
-                }`}>
-                  {message.timestamp}
+                <p className="text-base font-medium">{message.user_query}</p>
+                <span className="text-xs mt-2 block text-white/70">
+                  {new Date(message.created_at).toLocaleTimeString()}
                 </span>
               </motion.div>
-              
-              {message.type === "bot" && message.text.includes('[Citation:') && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-2 ml-4 flex items-center gap-2 text-sm text-[#6E6963] bg-[#FFFBF5] px-3 py-1.5 rounded-lg border border-[#DCD2C7] shadow-sm max-w-fit"
-                >
-                  <FileText size={14} className="text-[#D4A24C]" />
-                  <span>
-                    {message.text.split('[Citation:')[1].replace(']', '')}
-                  </span>
-                </motion.div>
-              )}
             </div>
-          </div>
+          </motion.div>
+
+          {/* Agent Response */}
+          <motion.div className="flex justify-start">
+            <div className="flex items-start gap-4 max-w-3xl">
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-8 h-8 rounded-full shadow-md overflow-hidden flex-shrink-0 bg-[#499A97]/10"
+              >
+                <img 
+                  src={`https://api.dicebear.com/6.x/bottts/svg?`}
+                  alt="Assistant"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                className="bg-[#F0E5D8] text-[#2D2A28] px-6 py-4 rounded-2xl shadow-md border border-[#DCD2C7]"
+              >
+                <div className="prose prose-sm max-w-none">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({node, ...props}) => <p className="text-base mb-4 last:mb-0" {...props} />,
+                      a: ({node, ...props}) => <a className="text-[#D15F40] hover:text-[#B54A32]" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-4" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal ml-4 mb-4" {...props} />,
+                      li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                      code: ({inline, ...props}: CodeProps) => (
+                        inline 
+                          ? <code className="bg-[#FFFBF5] px-1 py-0.5 rounded text-sm font-mono" {...props} />
+                          : <code className="block bg-[#FFFBF5] p-4 rounded-lg text-sm font-mono mb-4" {...props} />
+                      ),
+                      pre: ({node, ...props}) => <pre className="bg-transparent p-0" {...props} />,
+                    }}
+                  >
+                    {message.agent_response}
+                  </ReactMarkdown>
+                </div>
+                {/* Only show timestamp if message is not a streaming message */}
+                {!('isStreaming' in message && message.isStreaming) && (
+                  <span className="text-xs mt-2 block text-[#6E6963]">
+                    {new Date(message.created_at).toLocaleTimeString()}
+                  </span>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
         </motion.div>
       ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 } 

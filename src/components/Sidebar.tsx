@@ -1,27 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Thread } from "../app/dashboard/page";
+import { Thread, ThreadSummary } from "../types/thread";
 import { motion, AnimatePresence } from "framer-motion";
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, LogOutIcon } from 'lucide-react';
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, LogOutIcon, Loader2 } from 'lucide-react';
 
 interface SidebarProps {
-  threads: Thread[];
-  onSelectThread: (thread: Thread) => void;
+  threads: ThreadSummary[];
+  onSelectThread: (thread: ThreadSummary) => void;
   onNewChat: () => void;
   selectedThread: Thread | null;
+  isLoading: boolean;
 }
 
-export default function Sidebar({ threads, onSelectThread, onNewChat, selectedThread }: SidebarProps) {
+export default function Sidebar({ threads, onSelectThread, onNewChat, selectedThread, isLoading }: SidebarProps) {
   const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [avatarSeed, setAvatarSeed] = useState("user");
-  
-  // Set a stable avatar seed on client-side only
-  useEffect(() => {
-    setAvatarSeed("user" + Date.now().toString());
-  }, []);
 
   return (
     <motion.div 
@@ -48,43 +43,64 @@ export default function Sidebar({ threads, onSelectThread, onNewChat, selectedTh
 
         <AnimatePresence>
           <div className={`space-y-3 overflow-y-auto max-h-[calc(100vh-220px)] ${isCollapsed ? "px-1" : ""}`}>
-            {threads.map((thread) => {
-              const isSelected = selectedThread?.id === thread.id;
-              
-              return (
-                <motion.button 
-                  key={thread.id}
-                  onClick={() => onSelectThread(thread)}
-                  whileHover={{ backgroundColor: isSelected ? "rgba(209, 95, 64, 0.15)" : "rgba(209, 95, 64, 0.08)" }}
-                  className={`w-full text-left rounded-lg text-sm transition-colors flex items-center gap-3
-                    ${isSelected 
-                      ? `text-[#D15F40] ${isCollapsed ? "justify-center py-3" : "px-4 py-3 border-l-4 border-[#D15F40] bg-[#F7D8CE]/50"}` 
-                      : `text-[#6E6963] hover:text-[#D15F40] ${isCollapsed ? "justify-center py-3" : "px-4 py-3"}`
-                    }`}
-                >
-                  {isCollapsed ? (
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium
+            {isLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="animate-spin text-[#D15F40]" size={24} />
+              </div>
+            ) : threads.length === 0 ? (
+              <p className="text-center text-[#6E6963] text-sm px-4">
+                No conversations yet
+              </p>
+            ) : (
+              threads.map((thread) => {
+                const isSelected = selectedThread?.id === thread.id;
+                
+                return (
+                  <motion.button 
+                    key={thread.id}
+                    onClick={() => onSelectThread(thread)}
+                    whileHover={{ backgroundColor: isSelected ? "rgba(209, 95, 64, 0.15)" : "rgba(209, 95, 64, 0.08)" }}
+                    className={`w-full text-left rounded-lg text-sm transition-colors flex items-center gap-3
                       ${isSelected 
-                        ? "bg-[#D15F40] text-white" 
-                        : "bg-[#F7D8CE] text-[#D15F40]"
-                      }`}>
-                      {thread.title.charAt(0)}
-                    </div>
-                  ) : (
-                    <>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium
+                        ? `text-[#D15F40] ${isCollapsed ? "justify-center py-3" : "px-4 py-3 border-l-4 border-[#D15F40] bg-[#F7D8CE]/50"}` 
+                        : `text-[#6E6963] hover:text-[#D15F40] ${isCollapsed ? "justify-center py-3" : "px-4 py-3"}`
+                      }`}
+                  >
+                    {isCollapsed ? (
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium
                         ${isSelected 
                           ? "bg-[#D15F40] text-white" 
                           : "bg-[#F7D8CE] text-[#D15F40]"
                         }`}>
-                        {thread.title.charAt(0)}
+                        {thread.first_message.charAt(0)}
                       </div>
-                      <span className="truncate">{thread.title}</span>
-                    </>
-                  )}
-                </motion.button>
-              );
-            })}
+                    ) : (
+                      <>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium
+                          ${isSelected 
+                            ? "bg-[#D15F40] text-white" 
+                            : "bg-[#F7D8CE] text-[#D15F40]"
+                          }`}>
+                          {thread.first_message.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <motion.p 
+                            className="truncate"
+                            animate={thread.isNew ? { scale: [1, 1.02, 1] } : {}}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {thread.first_message}
+                          </motion.p>
+                          <p className="text-xs text-[#6E6963] mt-1">
+                            {new Date(thread.created_at).toLocaleDateString()} · {thread.message_count} messages
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </motion.button>
+                );
+              })
+            )}
           </div>
         </AnimatePresence>
       </div>
@@ -95,14 +111,14 @@ export default function Sidebar({ threads, onSelectThread, onNewChat, selectedTh
       >
         <div className="flex items-center gap-3">
           <img 
-            src={user?.avatar || `https://api.dicebear.com/6.x/micah/svg?seed=user`} 
+            src={`https://api.dicebear.com/6.x/micah/svg?seed=${user?.email || 'guest'}`}
             alt={user?.name || "User"} 
             className={`${isCollapsed ? "w-10 h-10 mx-auto" : "w-10 h-10"} rounded-full ring-2 ring-[#D15F40]/20 shadow-md`} 
           />
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#2D2A28] truncate">{user?.name || "Guest User"}</p>
-              <p className="text-xs text-[#6E6963] truncate">{user?.email || "guest@example.com"}</p>
+              <p className="text-sm font-medium text-[#2D2A28] truncate">{user?.name}</p>
+              <p className="text-xs text-[#6E6963] truncate">{user?.email}</p>
             </div>
           )}
           {!isCollapsed && (
