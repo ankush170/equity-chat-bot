@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Sparkles, LineChart, Database, Globe, FileText, Search, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { useAuth } from '../contexts/AuthContext';
 interface ChatInterfaceProps {
   thread: Thread | null;
@@ -177,12 +178,32 @@ export default function ChatInterface({ thread, onStartChat, streamingMessage }:
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
                     components={{
                       p: ({node, ...props}) => <p className="text-base mb-4 last:mb-0" {...props} />,
                       a: ({node, ...props}) => <a className="text-[#D15F40] hover:text-[#B54A32]" {...props} />,
                       ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-4" {...props} />,
                       ol: ({node, ...props}) => <ol className="list-decimal ml-4 mb-4" {...props} />,
                       li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                      table: ({node, ...props}) => (
+                        <div className="overflow-x-auto mb-4">
+                          <table className="min-w-full border-collapse border border-[#DCD2C7] rounded-lg" {...props} />
+                        </div>
+                      ),
+                      thead: ({node, ...props}) => <thead className="bg-[#F7D8CE]" {...props} />,
+                      th: ({node, ...props}) => (
+                        <th className="border border-[#DCD2C7] px-4 py-2 text-left text-[#2D2A28] font-semibold" {...props} />
+                      ),
+                      td: ({node, ...props}) => (
+                        <td className="border border-[#DCD2C7] px-4 py-2 text-[#6E6963]" {...props} />
+                      ),
+                      tr: ({node, ...props}) => (
+                        <tr className="hover:bg-[#FFFBF5] transition-colors" {...props} />
+                      ),
+                      br: ({node, ...props}) => <br className="mb-2" {...props} />,
+                      hr: ({node, ...props}) => (
+                        <hr className="my-4 border-t border-[#DCD2C7]" {...props} />
+                      ),
                       code: ({inline, ...props}: CodeProps) => (
                         inline 
                           ? <code className="bg-[#FFFBF5] px-1 py-0.5 rounded text-sm font-mono" {...props} />
