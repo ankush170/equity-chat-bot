@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { Loader2 } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
 export default function LoginPage() {
   const { login, googleLogin, error, isLoading } = useAuth();
@@ -22,9 +22,11 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     try {
-      await googleLogin(credentialResponse.credential);
+      if (credentialResponse.credential) {
+        await googleLogin(credentialResponse.credential);
+      }
     } catch (err) {
       console.error("Google login error:", err);
     }
