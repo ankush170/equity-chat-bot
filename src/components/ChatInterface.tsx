@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Thread, StreamMessage } from "../types/thread";
 import { motion } from "framer-motion";
-import { Sparkles, LineChart, Database, Globe, FileText } from 'lucide-react';
+import { Sparkles, LineChart, Database, Globe, FileText, Search, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAuth } from '../contexts/AuthContext';
@@ -52,59 +52,56 @@ export default function ChatInterface({ thread, onStartChat, streamingMessage }:
           Leverage advanced AI for comprehensive financial analysis, real-time market insights, and data-driven investment decisions.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-4xl w-full">
-          {/* Feature 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+          {/* Financial Analysis Card */}
           <motion.div 
-            whileHover={{ y: -8, boxShadow: "0 12px 30px rgba(209, 95, 64, 0.15)" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-[#FFFBF5] p-6 rounded-xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
+            whileHover={{ y: -5, boxShadow: "0 12px 30px rgba(209, 95, 64, 0.15)" }}
+            className="bg-[#FFFBF5] p-8 rounded-2xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
           >
             <motion.div 
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              className="bg-[#F7D8CE] w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              whileHover={{ scale: 1.1 }}
+              className="bg-[#F7D8CE] w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
             >
-              <LineChart size={32} className="text-[#D15F40]" />
+              <LineChart className="text-[#D15F40]" size={32} />
             </motion.div>
-            <h3 className="text-lg font-semibold text-[#2D2A28] mb-2">Financial Analysis</h3>
-            <p className="text-[#6E6963]">Advanced algorithms for accurate market trend predictions</p>
+            <h3 className="text-xl font-semibold text-[#2D2A28] mb-3">Financial Analysis & Research</h3>
+            <p className="text-[#6E6963] leading-relaxed">
+              Expert financial advisory and equity research assistance. Get detailed insights on companies, markets, and investment opportunities with comprehensive analysis.
+            </p>
           </motion.div>
-          
-          {/* Feature 2 */}
-          <motion.div
-            whileHover={{ y: -8, boxShadow: "0 12px 30px rgba(212, 162, 76, 0.15)" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-[#FFFBF5] p-6 rounded-xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
+
+          {/* Market Intelligence Card */}
+          <motion.div 
+            whileHover={{ y: -5, boxShadow: "0 12px 30px rgba(209, 95, 64, 0.15)" }}
+            className="bg-[#FFFBF5] p-8 rounded-2xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
           >
             <motion.div 
-              whileHover={{ rotate: -15, scale: 1.1 }}
-              className="bg-[#F7D8CE] w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              whileHover={{ scale: 1.1 }}
+              className="bg-[#F7D8CE] w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
             >
-              <Database size={32} className="text-[#D15F40]" />
+              <Search className="text-[#D15F40]" size={32} />
             </motion.div>
-            <h3 className="text-lg font-semibold text-[#2D2A28] mb-2">Research Database</h3>
-            <p className="text-[#6E6963]">Access comprehensive financial research and reports</p>
+            <h3 className="text-xl font-semibold text-[#2D2A28] mb-3">Real-Time Market Intelligence</h3>
+            <p className="text-[#6E6963] leading-relaxed">
+              Access latest market data through web search with verified citations. Stay updated with real-time financial news, trends, and market movements.
+            </p>
           </motion.div>
-          
-          {/* Feature 3 */}
-          <motion.div
-            whileHover={{ y: -8, boxShadow: "0 12px 30px rgba(73, 154, 151, 0.15)" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="bg-[#FFFBF5] p-6 rounded-xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
+
+          {/* Smart Tools Card */}
+          <motion.div 
+            whileHover={{ y: -5, boxShadow: "0 12px 30px rgba(209, 95, 64, 0.15)" }}
+            className="bg-[#FFFBF5] p-8 rounded-2xl border border-[#DCD2C7] shadow-lg flex flex-col items-center text-center"
           >
             <motion.div 
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              className="bg-[#F7D8CE] w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              whileHover={{ scale: 1.1 }}
+              className="bg-[#F7D8CE] w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
             >
-              <Globe size={32} className="text-[#D15F40]" />
+              <MessageSquare className="text-[#D15F40]" size={32} />
             </motion.div>
-            <h3 className="text-lg font-semibold text-[#2D2A28] mb-2">Real-time Insights</h3>
-            <p className="text-[#6E6963]">Up-to-date market data and real-time analysis</p>
+            <h3 className="text-xl font-semibold text-[#2D2A28] mb-3">Smart Interaction Tools</h3>
+            <p className="text-[#6E6963] leading-relaxed">
+              Seamlessly interact through voice commands and document analysis. Upload financial documents for instant insights or use voice chat for quick market queries.
+            </p>
           </motion.div>
         </div>
         
